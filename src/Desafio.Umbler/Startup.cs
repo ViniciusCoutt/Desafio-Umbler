@@ -1,5 +1,8 @@
 ﻿using System;
+using Desafio.Umbler.Data;
+using Desafio.Umbler.Interfaces;
 using Desafio.Umbler.Models;
+using Desafio.Umbler.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +31,7 @@ namespace Desafio.Umbler
                 // Use 'MariaDbServerVersion' for MariaDB.
                 // Alternatively, use 'ServerVersion.AutoDetect(connectionString)'.
                 // For common usages, see pull request #1233.
-                var serverVersion = new MySqlServerVersion(new Version(8, 0, 27));
+                var serverVersion = new MySqlServerVersion(new Version(8, 0, 28));
 
                 // Replace 'YourDbContext' with the name of your own DbContext derived class.
                 services.AddDbContext<DatabaseContext>(
@@ -40,8 +43,7 @@ namespace Desafio.Umbler
                         .EnableSensitiveDataLogging()
                         .EnableDetailedErrors()
                 );
-
-
+            services.AddScoped<IWhoisClient, WhoisClientService>();
             services.AddControllersWithViews();
         }
 
