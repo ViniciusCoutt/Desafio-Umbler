@@ -1,5 +1,6 @@
 using Desafio.Umbler.Controllers;
 using Desafio.Umbler.Data;
+using Desafio.Umbler.DTOs;
 using Desafio.Umbler.Interfaces;
 using Desafio.Umbler.Models;
 using DnsClient;
@@ -53,6 +54,7 @@ namespace Desafio.Umbler.Test
             //arrange 
             var whoisClient = new Mock<IWhoisClient>().Object;
             var lookupClient = new Mock<ILookupClient>().Object;
+
             var options = new DbContextOptionsBuilder<DatabaseContext>()
                 .UseInMemoryDatabase(databaseName: "Find_searches_url")
                 .Options;
@@ -74,10 +76,11 @@ namespace Desafio.Umbler.Test
                 //act
                 var response = controller.Get("test.com");
                 var result = response.Result as OkObjectResult;
-                var obj = result.Value as Domain;
-                Assert.AreEqual(obj.Id, domain.Id);
+                var obj = result.Value as DomainDTO;
                 Assert.AreEqual(obj.Ip, domain.Ip);
                 Assert.AreEqual(obj.Name, domain.Name);
+                Assert.AreEqual(obj.HostedAt, domain.HostedAt);
+                Assert.AreEqual(obj.WhoIs, domain.WhoIs);
             }
         }
 
@@ -99,7 +102,7 @@ namespace Desafio.Umbler.Test
                 //act
                 var response = controller.Get("test.com");
                 var result = response.Result as OkObjectResult;
-                var obj = result.Value as Domain;
+                var obj = result.Value as DomainDTO;
                 Assert.IsNotNull(obj);
             }
         }
@@ -129,7 +132,7 @@ namespace Desafio.Umbler.Test
                 //act
                 var response = controller.Get("test.com");
                 var result = response.Result as OkObjectResult;
-                var obj = result.Value as Domain;
+                var obj = result.Value as DomainDTO;
                 Assert.IsNotNull(obj);
             }
         }
@@ -159,7 +162,7 @@ namespace Desafio.Umbler.Test
                 //act
                 var response = controller.Get("test.com");
                 var result = response.Result as OkObjectResult;
-                var obj = result.Value as Domain;
+                var obj = result.Value as DomainDTO;
                 Assert.IsNotNull(obj);
             }
         }
