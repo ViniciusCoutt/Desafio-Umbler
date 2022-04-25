@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
 
 namespace Desafio.Umbler.Test
 {
@@ -59,7 +58,8 @@ namespace Desafio.Umbler.Test
                 .UseInMemoryDatabase(databaseName: "Find_searches_url")
                 .Options;
 
-            var domain = new Domain { Id = 1, Ip = "192.168.0.1", Name = "test.com", UpdatedAt = DateTime.Now, HostedAt = "umbler.corp", Ttl = 60, WhoIs = "Ns.umbler.com" };
+            var domain = new Domain("test.com");
+            domain.setDomain("192.168.0.1", "Ns.umbler.com", 60, "umbler.corp");
 
             // Insert seed data into the database using one instance of the context
             using (var db = new DatabaseContext(options))
@@ -118,7 +118,6 @@ namespace Desafio.Umbler.Test
             var dnsResponse = new Mock<IDnsQueryResponse>();
             lookupClient.Setup(l => l.QueryAsync(domainName, QueryType.ANY, QueryClass.IN, System.Threading.CancellationToken.None)).ReturnsAsync(dnsResponse.Object);
 
-            //arrange 
             var options = new DbContextOptionsBuilder<DatabaseContext>()
                 .UseInMemoryDatabase(databaseName: "Find_searches_url")
                 .Options;
@@ -148,7 +147,6 @@ namespace Desafio.Umbler.Test
 
             whoisClient.Setup(l => l.QueryAsync(domainName));
 
-            //arrange 
             var options = new DbContextOptionsBuilder<DatabaseContext>()
                 .UseInMemoryDatabase(databaseName: "Find_searches_url")
                 .Options;
@@ -160,11 +158,19 @@ namespace Desafio.Umbler.Test
                 var controller = new DomainController(db, lookupClient.Object, whoisClient.Object);
 
                 //act
-                var response = controller.Get("test.com");
+                var response = controller.Get(domainName);
                 var result = response.Result as OkObjectResult;
                 var obj = result.Value as DomainDTO;
                 Assert.IsNotNull(obj);
             }
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(BadHttpRequestException), "Nome de domínio inválido")]
+        public void Domain_With_InvalidName()
+        {
+            new Domain("test");
+        }
+
     }
 }

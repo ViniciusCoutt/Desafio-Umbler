@@ -8,6 +8,8 @@ using DnsClient;
 using Desafio.Umbler.Data;
 using Desafio.Umbler.Interfaces;
 using Desafio.Umbler.DTOs;
+using Microsoft.AspNetCore.Http;
+using System.Text.RegularExpressions;
 
 namespace Desafio.Umbler.Controllers
 {
@@ -36,23 +38,25 @@ namespace Desafio.Umbler.Controllers
         [ProducesResponseType(400)]
         public async Task<IActionResult> Get(string domainName)
         {
+
             Domain domain = new Domain(domainName);
             domain = await _db.Domains.FirstOrDefaultAsync(d => d.Name == domainName);
 
             if (domain == null)
             {
-                domain = await RequestData(domainName);
-                _db.Domains.Add(domain);
+                domain = new Domain(domainName);
+                var domainData = await RequestData(domain);
+                _db.Domains.Add(domainData);
+                await _db.SaveChangesAsync();
             }
 
             var needUpdate = DateTime.Now.Subtract(domain.UpdatedAt).TotalMinutes > domain.Ttl;
             if (needUpdate)
             {
-                domain = await RequestData(domainName);
+                domain = await RequestData(domain);
                 _db.Domains.Update(domain);
+                await _db.SaveChangesAsync();
             }
-
-            await _db.SaveChangesAsync();
 
             DomainDTO dto = new DomainDTO
             {
@@ -61,31 +65,32 @@ namespace Desafio.Umbler.Controllers
                 WhoIs = domain.WhoIs,
                 HostedAt = domain.HostedAt,
             };
-
             return Ok(dto);
         }
 
-        private async Task<Domain> RequestData(string domainName)
+        private async Task<Domain> RequestData(Domain domain)
         {
-            var response = await _whoisClient.QueryAsync(domainName);
-            var result = await _lookupClient.QueryAsync(domainName, QueryType.ANY);
+            var response = await _whoisClient.QueryAsync(domain.Name);
+            var result = await _lookupClient.QueryAsync(domain.Name, QueryType.A);
             var record = result.Answers.ARecords().FirstOrDefault();
             var address = record?.Address;
-            var ip = address?.ToString();
 
+            var ip = address?.ToString();
             var hostResponse = await _whoisClient.QueryAsync(ip);
 
-            var domainData = new Domain
-            {
-                Name = domainName,
-                Ip = ip,
-                UpdatedAt = DateTime.Now,
-                WhoIs = response.Raw,
-                Ttl = record?.TimeToLive ?? 0,
-                HostedAt = hostResponse.OrganizationName
-            };
+            var ttl = record?.TimeToLive ?? 0;
+            var hostedAt = hostResponse.OrganizationName;
+            var whoIs = response.Raw;
 
-            return domainData;
+            domain.setDomain
+            (
+                ip,
+                whoIs,
+                ttl,
+                hostedAt
+            );
+
+            return domain;
         }
     }
 }

@@ -50,7 +50,6 @@ namespace Desafio.Umbler
             services.AddScoped<IWhoisClient, WhoisClientService>();
             services.AddScoped<ILookupClient, LookupClient>();
             services.AddControllersWithViews();
-            //services.AddControllers();
 
             services.AddSwaggerGen(c =>
             {
