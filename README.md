@@ -93,4 +93,12 @@ Se você rodar o projeto e testar um domínio, verá que ele já está funcionan
 
 # Modificações:
 
-- DESCREVA AQUI O OBJETIVO DAS MODIFICAÇÕES...
+- Injeção do IWhois e ILookup no controller, com objetivo de atender o principio de inversão de controle, desacoplando esses serviços e também para atender os testes. O serviço do Lookup já fornecia uma interface, porém, no caso do IWhois, foi necessário cria-lo com a assinatura do método e implementa-lo em uma wrapper class que encapsula o método estático de QueryAsync do WhoisClient, como indicado no comentário do test;
+- Instalação e implementação do swagger para documentar a API; 
+- Criação de Data transfer object (DTO) para retornar apenas os atributos necessárias do dominio na resposta da requisição;
+- Criação de método estático com regex dentro da entidade Domain para validação do nome do dominio;
+- Encapsulamento dos atributos de Domain, para limitar o acesso aos mesmos. Estando limitados a um set que recebe algumas informações e um construtor que recebe o  nome;
+- Criação de método privado dentro do controller com responsabilidade de realizar as requisições, assim evitando repetição de código;
+- Criação de teste em que o nome do domínio passado é inválido, tendo que retornar exception;
+- Validação do valor de input do front também com regex, se o nome não for válido é gerado um alert informando ao usuário;
+- Formatação dos valores passados ao front e estilização dos mesmos usando bootstrap e um pouquinho de css.
